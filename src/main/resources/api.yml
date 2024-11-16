@@ -1,0 +1,162 @@
+openapi: 3.0.3
+info:
+  title: API de Gestión de Transacciones Bancarias
+  description: API para registrar y gestionar transacciones bancarias, incluyendo depósitos, retiros y transferencias.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8085
+    description: Servidor local
+paths:
+  /transacciones/deposito:
+    post:
+      summary: Registrar un depósito
+      description: Registrar una transacción de depósito en una cuenta bancaria.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SolicitudTransaccion'
+      responses:
+        '201':
+          description: Depósito registrado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespuestaTransaccion'
+  /transacciones/retiro:
+    post:
+      summary: Registrar un retiro
+      description: Registrar una transacción de retiro en una cuenta bancaria.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SolicitudTransaccion'
+      responses:
+        '201':
+          description: Retiro registrado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespuestaTransaccion'
+  /transacciones/transferencia:
+    post:
+      summary: Registrar una transferencia
+      description: Registrar una transferencia entre dos cuentas bancarias.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SolicitudTransferencia'
+      responses:
+        '201':
+          description: Transferencia registrada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespuestaTransaccion'
+  /transacciones/historial:
+    get:
+      summary: Consultar historial de transacciones
+      description: Devuelve el historial de todas las transacciones registradas, con opción de filtrado.
+      parameters:
+        - name: accountId
+          in: query
+          required: false
+          description: ID de la cuenta asociada
+          schema:
+            type: string
+        - name: transactionType
+          in: query
+          required: false
+          description: Tipo de transacción (DEPOSIT, WITHDRAW, TRANSFER)
+          schema:
+            type: string
+        - name: startDate
+          in: query
+          required: false
+          description: Fecha inicial para el rango de búsqueda (YYYY-MM-DD)
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          required: false
+          description: Fecha final para el rango de búsqueda (YYYY-MM-DD)
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Historial de transacciones
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RespuestaTransaccion'
+components:
+  schemas:
+    SolicitudTransaccion:
+      type: object
+      properties:
+        accountId:
+          type: string
+          description: ID de la cuenta asociada.
+        amount:
+          type: number
+          format: double
+          description: Monto de la transacción.
+      required:
+        - accountId
+        - amount
+    SolicitudTransferencia:
+      type: object
+      properties:
+        sourceAccountId:
+          type: string
+          description: ID de la cuenta de origen.
+        destinationAccountId:
+          type: string
+          description: ID de la cuenta de destino.
+        amount:
+          type: number
+          format: double
+          description: Monto a transferir.
+      required:
+        - sourceAccountId
+        - destinationAccountId
+        - amount
+    RespuestaTransaccion:
+      type: object
+      properties:
+        transactionId:
+          type: string
+          description: ID único de la transacción.
+        transactionType:
+          type: string
+          description: Tipo de transacción (DEPOSIT, WITHDRAW, TRANSFER).
+        amount:
+          type: number
+          format: double
+          description: Monto de la transacción.
+        date:
+          type: string
+          format: date-time
+          description: Fecha de la transacción.
+        accountId:
+          type: string
+          description: ID de la cuenta asociada.
+        destinationAccountId:
+          type: string
+          nullable: true
+          description: ID de la cuenta de destino (solo para transferencias).
+      required:
+        - transactionId
+        - transactionType
+        - amount
+        - date
+        - accountId
